@@ -5,6 +5,13 @@ const { sendTextMessage } = require("../services/whatsapp");
 const router = express.Router();
 const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
 
+router.get("/test", (req, res) => {
+  res.status(200).json({
+    status: "Server working",
+    message: "WhatsApp Event Bot is running",
+  });
+});
+
 const WELCOME_TEXT = `Welcome to Church Event Registration 🙏
 1 Register
 2 Event Details`;
