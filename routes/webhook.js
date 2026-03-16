@@ -49,16 +49,19 @@ router.post("/webhook", async (req, res) => {
     const changes = req.body?.entry?.[0]?.changes?.[0]?.value;
     const messages = changes?.messages || [];
 
-    if (messages.length === 0) {
-      console.log("No messages in payload");
-      return res.sendStatus(200);
+   if (!messages || messages.length === 0) {
+  console.log(
+    "Webhook event without messages:",
+    JSON.stringify(changes, null, 2)
+     );
+     return res.sendStatus(200);
     }
 
     const message = messages[0];
     const from = message.from;
 
     if (!from) {
-      console.log("Sender not found");
+      console.log("Sender not found"); 
       return res.sendStatus(200);
     }
 
