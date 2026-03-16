@@ -26,6 +26,7 @@ const PAYMENT_LINK = "upi://pay?pa=church@upi&pn=ChurchEvent&am=300";
 
 // Webhook verification
 router.get("/webhook", (req, res) => {
+
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
@@ -36,32 +37,38 @@ router.get("/webhook", (req, res) => {
   }
 
   return res.sendStatus(403);
+
 });
 
 
 // Receive messages
 router.post("/webhook", async (req, res) => {
+
   try {
 
-    console.log("Incoming Webhook Payload:");
-    console.log(JSON.stringify(req.body, null, 2));
+    console.log("Webhook payload:", JSON.stringify(req.body, null, 2));
 
-    const changes = req.body?.entry?.[0]?.changes?.[0]?.value;
-    const messages = changes?.messages || [];
+    const entry = req.body?.entry?.[0];
+    const change = entry?.changes?.[0];
+    const value = change?.value;
 
-   if (!messages || messages.length === 0) {
-  console.log(
-    "Webhook event without messages:",
-    JSON.stringify(changes, null, 2)
-     );
-     return res.sendStatus(200);
+    if (!value) {
+      console.log("Webhook event without value:", req.body);
+      return res.sendStatus(200);
+    }
+
+    const messages = value.messages;
+
+    if (!messages || messages.length === 0) {
+      console.log("Webhook event without messages:", JSON.stringify(value, null, 2));
+      return res.sendStatus(200);
     }
 
     const message = messages[0];
     const from = message.from;
 
     if (!from) {
-      console.log("Sender not found"); 
+      console.log("Sender not found");
       return res.sendStatus(200);
     }
 
@@ -72,13 +79,17 @@ router.post("/webhook", async (req, res) => {
     return res.sendStatus(200);
 
   } catch (error) {
+
     console.error("Webhook processing error:", error);
     return res.sendStatus(500);
+
   }
+
 });
 
 
 router.get("/admin/registrations", async (req, res) => {
+
   try {
 
     const authHeader = req.headers.authorization || "";
@@ -99,9 +110,12 @@ router.get("/admin/registrations", async (req, res) => {
     return res.json({ registrations: data });
 
   } catch (error) {
+
     console.error("Admin list error:", error.message);
     return res.status(500).json({ error: "Failed to fetch registrations" });
+
   }
+
 });
 
 
@@ -220,7 +234,6 @@ async function handleIncomingMessage(phoneNumber, message) {
       "Payment proof received. Our team will verify and confirm your registration."
     );
 
-    return;
   }
 
 }
@@ -237,6 +250,7 @@ async function getRegistrationByPhone(phoneNumber) {
   if (error) throw error;
 
   return data;
+
 }
 
 
@@ -252,6 +266,7 @@ async function upsertRegistration(phoneNumber, fields) {
     .upsert(payload, { onConflict: "phone_number" });
 
   if (error) throw error;
+
 }
 
 
